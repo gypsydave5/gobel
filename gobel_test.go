@@ -1,9 +1,7 @@
 package gobel
 
 import (
-	"container/list"
 	"reflect"
-	"strconv"
 	"testing"
 )
 
@@ -17,52 +15,39 @@ func TestTokenize(t *testing.T) {
 	}
 }
 
-type List struct {
-	list.Element
-}
-
-type Pair struct {
-	First interface{}
-	Rest  *Pair
-}
-
-type Symbol struct {
-	Str string
-}
-
 func TestParse(t *testing.T) {
-	t.Run("integer", func(t *testing.T) {
-		program := "1"
-		want := 1
-		got := parse(program)
-		if !reflect.DeepEqual(want, got) {
-			t.Errorf("Expected %#v but got %#v", want, got)
-		}
-	})
-	t.Run("symbol", func(t *testing.T) {
-		program := "symbol"
-		want := Symbol{"symbol"}
-		got := parse(program)
-		if !reflect.DeepEqual(want, got) {
-			t.Errorf("Expected %#v but got %#v", want, got)
-		}
-	})
-}
-
-func parse(program string) interface{} {
-	toks := tokenize(program)
-	return readTokens(toks)
-
-}
-
-func readTokens(toks []string) interface{} {
-	return atom(toks[0])
-}
-
-func atom(a string) interface{} {
-	i, err := strconv.Atoi(a)
-	if err == nil {
-		return i
+	cases := []struct {
+		name    string
+		program string
+		want    interface{}
+	}{
+		{"integer", "1", 1},
+		{"symbol", "symbol", Symbol{"symbol"}},
+		{"empty list", "()", Nil},
+		{"one item list", "(1)", &Pair{1, nil}},
+		{"two item list", "(1 2)", &Pair{1, &Pair{2, nil}}},
+		{"three item list", "(1 2 3)", &Pair{1, &Pair{2, &Pair{3, nil}}}},
+		{"nested list", "((1))", &Pair{&Pair{1, nil}, nil}},
+		{"funky expression", "(if nil 1 2)", &Pair{Symbol{"if"}, &Pair{nil, &Pair{1, &Pair{2, nil}}}}},
 	}
-	return Symbol{a}
+
+	for i := range cases {
+		c := cases[i]
+		t.Run(c.name, func(t *testing.T) {
+			got := parse(c.program)
+			if !reflect.DeepEqual(c.want, got) {
+				t.Errorf("Expected %#v but got %#v", c.want, got)
+			}
+		})
+	}
+}
+
+func TestEval(t *testing.T) {
+	expression := 1
+	want := 1
+	env := make(map[string]interface{})
+	got := eval(expression, env)
+	if got != want {
+		t.Errorf("Expected %#v to evaluate to %#v but got %#v", expression, want, got)
+	}
 }
