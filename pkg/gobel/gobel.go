@@ -49,31 +49,39 @@ func (t *Tokenizer) End() bool {
 	return t.current == len(t.tokens)
 }
 
-func parse(program string) interface{} {
+func Parse(program string) []interface{} {
+	var expressions []interface{}
 	toks := NewTokenizer(program)
-	return readTokens(toks)
+	for !toks.End() {
+		e := readTokens(toks)
+		expressions = append(expressions, e)
+	}
+	return expressions
 }
 
 func readTokens(toks *Tokenizer) interface{} {
 	if toks.Current() == "(" {
 		toks.Next()
-		return readExpression(toks)
+		return readList(toks)
 	}
 	a := atom(toks.Current())
 	toks.Next()
 	return a
 }
 
-func readExpression(toks *Tokenizer) *Pair {
+func readList(toks *Tokenizer) *Pair {
 	if toks.Current() == ")" {
+		toks.Next()
 		return Nil
 	}
 	head := Pair{}
+
 	head.First = readTokens(toks)
 	if toks.Current() == ")" {
 		head.Rest = Nil
+		toks.Next()
 	} else {
-		head.Rest = readExpression(toks)
+		head.Rest = readList(toks)
 	}
 	return &head
 }
@@ -86,7 +94,15 @@ func atom(a string) interface{} {
 	if err == nil {
 		return i
 	}
-	return Symbol{a}
+	return &Symbol{a}
+}
+
+func Eval(expressions []interface{}, env map[string]interface{}) interface{} {
+	var r interface{}
+	for i := range expressions {
+		r = eval(expressions[i], env)
+	}
+	return r
 }
 
 func eval(expression interface{}, env map[string]interface{}) interface{} {
@@ -100,19 +116,40 @@ func eval(expression interface{}, env map[string]interface{}) interface{} {
 	}
 
 	p, ok := expression.(*Pair)
-	f := eval(p.First, env)
-	ff, ok := f.(func(l *Pair, env map[string]interface{}) interface{})
-	return ff(p.Rest, env)
+	if ok {
+		f := eval(p.First, env)
+		ff := f.(func(l *Pair, env map[string]interface{}) interface{})
+		return ff(p.Rest, env)
+	}
+	return "WTF???"
 }
 
-func defaultEnv() map[string]interface{} {
+func DefaultEnv() map[string]interface{} {
 	m := make(map[string]interface{})
 
 	m["+"] = func(l *Pair, env map[string]interface{}) interface{} {
 		result := 0
-		next := l.Rest
+		next := l
 		for next != nil {
 			result += eval(next.First, env).(int)
+			next = next.Rest
+		}
+		return result
+	}
+
+	m["-"] = func(l *Pair, env map[string]interface{}) interface{} {
+		result := 0
+		next := l
+		if next == nil {
+			return 0
+		}
+		if next.Rest == nil {
+			return -eval(next.First, env).(int)
+		}
+		result = eval(next.First, env).(int)
+		next = next.Rest
+		for next != nil {
+			result -= eval(next.First, env).(int)
 			next = next.Rest
 		}
 		return result
