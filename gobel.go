@@ -90,6 +90,33 @@ func atom(a string) interface{} {
 }
 
 func eval(expression interface{}, env map[string]interface{}) interface{} {
-	i, _ := expression.(int)
-	return i
+	i, ok := expression.(int)
+	if ok {
+		return i
+	}
+	s, ok := expression.(*Symbol)
+	if ok {
+		return env[s.Str]
+	}
+
+	p, ok := expression.(*Pair)
+	f := eval(p.First, env)
+	ff, ok := f.(func(l *Pair, env map[string]interface{}) interface{})
+	return ff(p.Rest, env)
+}
+
+func defaultEnv() map[string]interface{} {
+	m := make(map[string]interface{})
+
+	m["+"] = func(l *Pair, env map[string]interface{}) interface{} {
+		result := 0
+		next := l.Rest
+		for next != nil {
+			result += eval(next.First, env).(int)
+			next = next.Rest
+		}
+		return result
+	}
+
+	return m
 }

@@ -43,11 +43,25 @@ func TestParse(t *testing.T) {
 }
 
 func TestEval(t *testing.T) {
-	expression := 1
-	want := 1
-	env := make(map[string]interface{})
-	got := eval(expression, env)
-	if got != want {
-		t.Errorf("Expected %#v to evaluate to %#v but got %#v", expression, want, got)
+	emptyEnv := make(map[string]interface{})
+	oneEnv := make(map[string]interface{})
+	oneEnv["one"] = 1
+
+	cases := []struct {
+		expression interface{}
+		env        map[string]interface{}
+		want       interface{}
+	}{
+		{1, emptyEnv, 1},
+		{&Symbol{"one"}, oneEnv, 1},
+		{&Pair{Symbol{"+"}, &Pair{1, &Pair{2, nil}}}, defaultEnv(), 3},
+		{parse("(+ 1 2 3 4 5"), defaultEnv(), 15},
+		{parse("(+)"), defaultEnv(), 0},
+	}
+	for _, c := range cases {
+		got := eval(c.expression, c.env)
+		if got != c.want {
+			t.Errorf("Expected %#v to evaluate to %#v but got %#v", c.expression, c.want, got)
+		}
 	}
 }
