@@ -57,17 +57,19 @@ func TestParse(t *testing.T) {
 	}
 }
 
+type evalCase struct {
+	name       string
+	expression []interface{}
+	env        map[string]interface{}
+	want       interface{}
+}
+
 func TestEval(t *testing.T) {
 	emptyEnv := make(map[string]interface{})
 	oneEnv := make(map[string]interface{})
 	oneEnv["one"] = 1
 
-	cases := []struct {
-		name       string
-		expression []interface{}
-		env        map[string]interface{}
-		want       interface{}
-	}{
+	cases := []evalCase{
 		{"integer", []interface{}{1}, emptyEnv, 1},
 		{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
 		{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, nil}}}}, DefaultEnv(), 3},
@@ -77,6 +79,31 @@ func TestEval(t *testing.T) {
 		{"multiple expressions", Parse("1 2 3"), DefaultEnv(), 3},
 	}
 
+	testEvalCases(cases, t)
+
+	t.Run("subtraction", func(t *testing.T) {
+		cases := []evalCase{
+			{"subtract", Parse("(-)"), DefaultEnv(), 0},
+			{"subtract", Parse("(- 1)"), DefaultEnv(), -1},
+			{"subtract", Parse("(- 6 4)"), DefaultEnv(), 2},
+			{"subtract", Parse("(- 20 2 2 2)"), DefaultEnv(), 14},
+			{"subtract", Parse("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
+		}
+
+		testEvalCases(cases, t)
+	})
+
+	t.Run("if", func(t *testing.T) {
+		cases := []evalCase{
+			{"if true", Parse("(if 1 6 7)"), DefaultEnv(), 6},
+			{"if nil", Parse("(if nil 6 7)"), DefaultEnv(), 7},
+		}
+		testEvalCases(cases, t)
+	})
+}
+
+func testEvalCases(cases []evalCase, t *testing.T) {
+	t.Helper()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			got := Eval(c.expression, c.env)
@@ -85,28 +112,4 @@ func TestEval(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("subtraction", func(t *testing.T) {
-		cases := []struct {
-			name       string
-			expression []interface{}
-			env        map[string]interface{}
-			want       interface{}
-		}{
-			{"subtract", Parse("(-)"), DefaultEnv(), 0},
-			{"subtract", Parse("(- 1)"), DefaultEnv(), -1},
-			{"subtract", Parse("(- 6 4)"), DefaultEnv(), 2},
-			{"subtract", Parse("(- 20 2 2 2)"), DefaultEnv(), 14},
-			{"subtract", Parse("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
-		}
-
-		for _, c := range cases {
-			t.Run(c.name, func(t *testing.T) {
-				got := Eval(c.expression, c.env)
-				if !reflect.DeepEqual(got, c.want) {
-					t.Fatalf("Expected %#v to evaluate to %#v but got %#v", c.expression, c.want, got)
-				}
-			})
-		}
-	})
 }
