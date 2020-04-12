@@ -33,23 +33,24 @@ func TestParse(t *testing.T) {
 		{"integer", "1", 1},
 		{"symbol", "symbol", &Symbol{"symbol"}},
 		{"empty list", "()", Nil},
-		{"one item list", "(1)", &Pair{1, nil}},
-		{"two item list", "(1 2)", &Pair{1, &Pair{2, nil}}},
-		{"three item list", "(1 2 3)", &Pair{1, &Pair{2, &Pair{3, nil}}}},
-		{"nested list", "((1))", &Pair{&Pair{1, nil}, nil}},
+		{"nil", "nil", Nil},
+		{"one item list", "(1)", &Pair{1, Nil}},
+		{"two item list", "(1 2)", &Pair{1, &Pair{2, Nil}}},
+		{"three item list", "(1 2 3)", &Pair{1, &Pair{2, &Pair{3, Nil}}}},
+		{"nested list", "((1))", &Pair{&Pair{1, Nil}, Nil}},
 		{"simplest two lists", "( () () )", &Pair{Nil, &Pair{Nil, Nil}}},
 		{"simplest three lists", "( () () () )", &Pair{Nil, &Pair{Nil, &Pair{Nil, Nil}}}},
 		{"list in second place", "( 1 () )", &Pair{1, &Pair{Nil, Nil}}},
 		{"simple two lists", "( (1) (1) )", &Pair{&Pair{1, Nil}, &Pair{&Pair{1, Nil}, Nil}}},
 		{"two lists", "(+ (+ 1 2) (+ 3 4))",
-			&Pair{&Symbol{"+"}, &Pair{Parse("(+ 1 2)"), &Pair{Parse("(+ 3 4)"), nil}}}},
-		{"funky expression", "(if nil 1 2)", &Pair{&Symbol{"if"}, &Pair{nil, &Pair{1, &Pair{2, nil}}}}},
+			&Pair{&Symbol{"+"}, &Pair{Parse("(+ 1 2)")[0], &Pair{Parse("(+ 3 4)")[0], Nil}}}},
+		{"funky expression", "(if nil 1 2)", &Pair{&Symbol{"if"}, &Pair{Nil, &Pair{1, &Pair{2, Nil}}}}},
 	}
 
 	for i := range cases {
 		c := cases[i]
 		t.Run(c.name, func(t *testing.T) {
-			got := Parse(c.program)
+			got := Parse(c.program)[0]
 			if !reflect.DeepEqual(c.want, got) {
 				t.Errorf("Expected %#v but got %#v", c.want, got)
 			}
@@ -72,7 +73,7 @@ func TestEval(t *testing.T) {
 	cases := []evalCase{
 		{"integer", []interface{}{1}, emptyEnv, 1},
 		{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
-		{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, nil}}}}, DefaultEnv(), 3},
+		{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, DefaultEnv(), 3},
 		{"more addition", Parse("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
 		{"empty addition", Parse("(+)"), DefaultEnv(), 0},
 		{"nested addition", Parse("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},

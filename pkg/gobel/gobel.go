@@ -20,7 +20,7 @@ type List struct {
 
 type Pair struct {
 	First interface{}
-	Rest  *Pair
+	Rest  interface{}
 }
 
 type Symbol struct {
@@ -89,7 +89,7 @@ func readList(toks *Tokenizer) *Pair {
 
 func atom(a string) interface{} {
 	if a == "nil" {
-		return nil
+		return Nil
 	}
 	i, err := strconv.Atoi(a)
 	if err == nil {
@@ -107,8 +107,12 @@ func Eval(expressions []interface{}, env map[string]interface{}) interface{} {
 }
 
 func eval(expression interface{}, env map[string]interface{}) interface{} {
+	if expression == Nil {
+		return Nil
+	}
+
 	if expression == nil {
-		return nil
+		return Nil
 	}
 
 	i, ok := expression.(int)
@@ -123,9 +127,10 @@ func eval(expression interface{}, env map[string]interface{}) interface{} {
 
 	p, ok := expression.(*Pair)
 	if ok {
+		fmt.Printf("%#v\n", p.First)
 		f := eval(p.First, env)
 		ff := f.(func(l *Pair, env map[string]interface{}) interface{})
-		return ff(p.Rest, env)
+		return ff(p.Rest.(*Pair), env)
 	}
 
 	return "WTF???"
@@ -139,7 +144,7 @@ func DefaultEnv() map[string]interface{} {
 		next := l
 		for next != nil {
 			result += eval(next.First, env).(int)
-			next = next.Rest
+			next = next.Rest.(*Pair)
 		}
 		return result
 	}
@@ -147,28 +152,29 @@ func DefaultEnv() map[string]interface{} {
 	m["-"] = func(l *Pair, env map[string]interface{}) interface{} {
 		result := 0
 		next := l
-		if next == nil {
+		if next == Nil {
 			return 0
 		}
-		if next.Rest == nil {
+		if next.Rest == Nil {
 			return -eval(next.First, env).(int)
 		}
 		result = eval(next.First, env).(int)
-		next = next.Rest
-		for next != nil {
+		next = next.Rest.(*Pair)
+		for next != Nil {
 			result -= eval(next.First, env).(int)
-			next = next.Rest
+			next = next.Rest.(*Pair)
 		}
 		return result
 	}
 
 	m["if"] = func(l *Pair, env map[string]interface{}) interface{} {
+		fmt.Printf("%#v\n", l.First)
 		condition := eval(l.First, env)
 		fmt.Println(condition)
-		if condition != nil {
-			return eval(l.Rest.First, env)
+		if condition != Nil {
+			return eval(l.Rest.(*Pair).First, env)
 		}
-		return eval(l.Rest.Rest.First, env)
+		return eval(l.Rest.(*Pair).Rest.(*Pair).First, env)
 	}
 
 	return m
