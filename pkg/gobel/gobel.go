@@ -97,7 +97,19 @@ func atom(a string) interface{} {
 	if err == nil {
 		return i
 	}
+	if a[0] == '\\' {
+		return charCodeLookup(a[1:])
+	}
+
 	return &Symbol{a}
+}
+
+func charCodeLookup(s string) rune {
+	if s == "a" {
+		return 'a'
+	}
+
+	return '\000'
 }
 
 func Eval(expressions []interface{}, env Env) interface{} {
