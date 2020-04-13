@@ -2,7 +2,6 @@ package gobel
 
 import (
 	"container/list"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -130,7 +129,6 @@ func eval(expression interface{}, env map[string]interface{}) interface{} {
 
 	p, ok := expression.(*Pair)
 	if ok {
-		fmt.Printf("%#v\n", p.First)
 		f := eval(p.First, env)
 		ff := f.(func(l *Pair, env map[string]interface{}) interface{})
 		return ff(p.Rest.(*Pair), env)
@@ -171,9 +169,7 @@ func DefaultEnv() map[string]interface{} {
 	}
 
 	m["if"] = func(l *Pair, env map[string]interface{}) interface{} {
-		fmt.Printf("%#v\n", l.First)
 		condition := eval(l.First, env)
-		fmt.Println(condition)
 		if condition != Nil {
 			return eval(l.Rest.(*Pair).First, env)
 		}
