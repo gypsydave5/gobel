@@ -1,6 +1,6 @@
 # Gobel
 
-A _WIP_ implementation of Paul Graham's [Bel language](http://paulgraham.com/bel.html) written in Go.
+A _WIP_ implementation of Paul Graham's [Bel language][bel] written in Go.
 
 Right now it's a calculator that can do conditionals.
 
@@ -13,3 +13,13 @@ $ ./repl
 
 ## Run the tests
 
+```shell
+$ go test ./...
+```
+
+## Influence
+
+- The [Bel language][bel], obviously.
+- Peter Norvig's [_(How to Write a (Lisp) Interpreter (in Python))_](https://norvig.com/lispy.html)
+
+[bel]: (http://paulgraham.com/bel.html)
