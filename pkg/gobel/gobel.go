@@ -7,8 +7,13 @@ import (
 )
 
 func tokenize(s string) []string {
+	// TODO: better tokenization that this old tut
+	s = strings.Replace(s, "\\(", "\000", -1)
 	s = strings.Replace(s, "(", " ( ", -1)
+	s = strings.Replace(s, "\000", "\\(", -1)
+	s = strings.Replace(s, "\\)", "\000", -1)
 	s = strings.Replace(s, ")", " ) ", -1)
+	s = strings.Replace(s, "\000", "\\)", -1)
 	ss := strings.Fields(s)
 	return ss
 }
@@ -105,8 +110,12 @@ func atom(a string) interface{} {
 }
 
 func charCodeLookup(s string) rune {
-	if s == "a" {
-		return 'a'
+	if len(s) == 1 {
+		// length is 1 so assume this is a direct mapping of rune to rune
+		// return the first rune in the string
+		for _, r := range s {
+			return r
+		}
 	}
 
 	if s == "bel" {

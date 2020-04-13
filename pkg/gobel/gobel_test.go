@@ -2,6 +2,7 @@ package gobel
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -43,6 +44,22 @@ func TestRead(t *testing.T) {
 			{"a", `\a`, 'a'},
 			{"bel", `\bel`, '\a'},
 		}
+
+		t.Run("alphanumeric", func(t *testing.T) {
+			for i := 33; i <= 126; i++ {
+				r := rune(i)
+
+				t.Run(string(r), func(t *testing.T) {
+					var s strings.Builder
+					s.WriteRune('\\')
+					s.WriteRune(r)
+					got := Read(s.String())[0]
+					if !reflect.DeepEqual(r, got) {
+						t.Errorf("Expected %#v when reading %q but got %#v", r, s.String(), got)
+					}
+				})
+			}
+		})
 		testReadCases(cases, t)
 	})
 
