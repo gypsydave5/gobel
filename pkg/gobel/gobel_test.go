@@ -33,6 +33,7 @@ func TestParse(t *testing.T) {
 		{"integer", "1", 1},
 		{"symbol", "symbol", &Symbol{"symbol"}},
 		{"character", `\a`, 'a'},
+		{"slightly more interesting character", `\bel`, '\a'},
 		{"empty list", "()", Nil},
 		{"nil", "nil", Nil},
 		{"one item list", "(1)", &Pair{1, Nil}},

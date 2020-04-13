@@ -109,6 +109,10 @@ func charCodeLookup(s string) rune {
 		return 'a'
 	}
 
+	if s == "bel" {
+		return '\a'
+	}
+
 	return '\000'
 }
 
