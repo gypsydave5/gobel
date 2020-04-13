@@ -63,13 +63,13 @@ func TestParse(t *testing.T) {
 type evalCase struct {
 	name       string
 	expression []interface{}
-	env        map[string]interface{}
+	env        Env
 	want       interface{}
 }
 
 func TestEval(t *testing.T) {
-	emptyEnv := make(map[string]interface{})
-	oneEnv := make(map[string]interface{})
+	emptyEnv := make(Env)
+	oneEnv := make(Env)
 	oneEnv["one"] = 1
 
 	t.Run("types", func(t *testing.T) {

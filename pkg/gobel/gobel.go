@@ -100,7 +100,7 @@ func atom(a string) interface{} {
 	return &Symbol{a}
 }
 
-func Eval(expressions []interface{}, env map[string]interface{}) interface{} {
+func Eval(expressions []interface{}, env Env) interface{} {
 	var r interface{}
 	for i := range expressions {
 		r = eval(expressions[i], env)
@@ -108,7 +108,7 @@ func Eval(expressions []interface{}, env map[string]interface{}) interface{} {
 	return r
 }
 
-func eval(expression interface{}, env map[string]interface{}) interface{} {
+func eval(expression interface{}, env Env) interface{} {
 	if expression == Nil {
 		return Nil
 	}
@@ -130,17 +130,19 @@ func eval(expression interface{}, env map[string]interface{}) interface{} {
 	p, ok := expression.(*Pair)
 	if ok {
 		f := eval(p.First, env)
-		ff := f.(func(l *Pair, env map[string]interface{}) interface{})
+		ff := f.(func(l *Pair, env Env) interface{})
 		return ff(p.Rest.(*Pair), env)
 	}
 
 	return "WTF???"
 }
 
-func DefaultEnv() map[string]interface{} {
-	m := make(map[string]interface{})
+type Env = map[string]interface{}
 
-	m["+"] = func(l *Pair, env map[string]interface{}) interface{} {
+func DefaultEnv() Env {
+	m := make(Env)
+
+	m["+"] = func(l *Pair, env Env) interface{} {
 		result := 0
 		next := l
 		for next != nil {
@@ -150,7 +152,7 @@ func DefaultEnv() map[string]interface{} {
 		return result
 	}
 
-	m["-"] = func(l *Pair, env map[string]interface{}) interface{} {
+	m["-"] = func(l *Pair, env Env) interface{} {
 		result := 0
 		next := l
 		if next == Nil {
@@ -168,7 +170,7 @@ func DefaultEnv() map[string]interface{} {
 		return result
 	}
 
-	m["if"] = func(l *Pair, env map[string]interface{}) interface{} {
+	m["if"] = func(l *Pair, env Env) interface{} {
 		condition := eval(l.First, env)
 		if condition != Nil {
 			return eval(l.Rest.(*Pair).First, env)
