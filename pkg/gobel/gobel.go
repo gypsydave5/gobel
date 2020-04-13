@@ -81,6 +81,9 @@ func readList(toks *Tokenizer) *Pair {
 	if toks.Current() == ")" {
 		head.Rest = Nil
 		toks.Next()
+	} else if toks.Current() == "." {
+		toks.Next()
+		head.Rest = readTokens(toks)
 	} else {
 		head.Rest = readList(toks)
 	}

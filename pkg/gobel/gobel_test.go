@@ -36,7 +36,9 @@ func TestParse(t *testing.T) {
 		{"nil", "nil", Nil},
 		{"one item list", "(1)", &Pair{1, Nil}},
 		{"two item list", "(1 2)", &Pair{1, &Pair{2, Nil}}},
+		{"pair", "(1 . 2)", &Pair{1, 2}},
 		{"three item list", "(1 2 3)", &Pair{1, &Pair{2, &Pair{3, Nil}}}},
+		{"dotted list", "(1 2 . 3)", &Pair{1, &Pair{2, 3}}},
 		{"nested list", "((1))", &Pair{&Pair{1, Nil}, Nil}},
 		{"simplest two lists", "( () () )", &Pair{Nil, &Pair{Nil, Nil}}},
 		{"simplest three lists", "( () () () )", &Pair{Nil, &Pair{Nil, &Pair{Nil, Nil}}}},
@@ -52,7 +54,7 @@ func TestParse(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			got := Parse(c.program)[0]
 			if !reflect.DeepEqual(c.want, got) {
-				t.Errorf("Expected %q but got %q", c.want, got)
+				t.Errorf("Expected %#v but got %#v", c.want, got)
 			}
 		})
 	}
