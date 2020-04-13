@@ -52,7 +52,7 @@ func TestParse(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			got := Parse(c.program)[0]
 			if !reflect.DeepEqual(c.want, got) {
-				t.Errorf("Expected %#v but got %#v", c.want, got)
+				t.Errorf("Expected %q but got %q", c.want, got)
 			}
 		})
 	}

@@ -6,6 +6,13 @@ import (
 )
 
 func TestStringer(t *testing.T) {
+	t.Run("symbols", func(t *testing.T) {
+		t.Parallel()
+		s := &g.Symbol{"symbol"}
+		if s.String() != s.Str {
+			t.Errorf("Expected %q but got %q", s.String(), s.Str)
+		}
+	})
 	t.Run("pairs", func(t *testing.T) {
 		cases := []struct {
 			name     string

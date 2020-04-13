@@ -8,7 +8,7 @@ import (
 
 func (p *Pair) String() string {
 	if p == Nil {
-		return "()"
+		return "nil"
 	}
 
 	var s strings.Builder
@@ -33,6 +33,10 @@ func (p *Pair) String() string {
 	}
 
 	return s.String()
+}
+
+func (s Symbol) String() string {
+	return s.Str
 }
 
 func toString(i interface{}) string {
