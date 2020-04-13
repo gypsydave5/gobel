@@ -14,10 +14,24 @@ func (p *Pair) String() string {
 	var s strings.Builder
 
 	s.WriteString("(")
-	s.WriteString(toString(p.First))
-	s.WriteString(" . ")
-	s.WriteString(toString(p.Rest))
-	s.WriteString(")")
+
+	for {
+		s.WriteString(toString(p.First))
+		if p.Rest == Nil || p.Rest == nil {
+			s.WriteString(")")
+			return s.String()
+		}
+		if next, ok := p.Rest.(*Pair); ok {
+			s.WriteString(" ")
+			p = next
+			continue
+		}
+		s.WriteString(" . ")
+		s.WriteString(toString(p.Rest))
+		s.WriteString(")")
+		break
+	}
+
 	return s.String()
 }
 

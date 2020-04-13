@@ -15,6 +15,8 @@ func TestStringer(t *testing.T) {
 			{"nil", nil, "()"},
 			{"Nil", g.Nil, "()"},
 			{"simple pair", &g.Pair{1, 2}, "(1 . 2)"},
+			{"simple list", &g.Pair{1, g.Nil}, "(1)"},
+			{"two item list", &g.Pair{1, &g.Pair{2, g.Nil}}, "(1 2)"},
 		}
 
 		for _, c := range cases {
