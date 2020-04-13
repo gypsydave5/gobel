@@ -44,6 +44,7 @@ func TestRead(t *testing.T) {
 			{"a", `\a`, 'a'},
 			{"bel", `\bel`, '\a'},
 			{"space", `\space`, ' '},
+			{"tab", `\tab`, '\t'},
 		}
 
 		t.Run("alphanumeric", func(t *testing.T) {

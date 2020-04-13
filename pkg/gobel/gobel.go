@@ -126,6 +126,10 @@ func charCodeLookup(s string) rune {
 		return ' '
 	}
 
+	if s == "tab" {
+		return '\t'
+	}
+
 	return '\000'
 }
 
