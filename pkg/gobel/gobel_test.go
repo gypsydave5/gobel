@@ -43,6 +43,7 @@ func TestRead(t *testing.T) {
 		cases := []readCase{
 			{"a", `\a`, 'a'},
 			{"bel", `\bel`, '\a'},
+			{"space", `\space`, ' '},
 		}
 
 		t.Run("alphanumeric", func(t *testing.T) {

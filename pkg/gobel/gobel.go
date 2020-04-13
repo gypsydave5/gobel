@@ -122,6 +122,10 @@ func charCodeLookup(s string) rune {
 		return '\a'
 	}
 
+	if s == "space" {
+		return ' '
+	}
+
 	return '\000'
 }
 
