@@ -70,19 +70,29 @@ func TestEval(t *testing.T) {
 	oneEnv := make(map[string]interface{})
 	oneEnv["one"] = 1
 
-	cases := []evalCase{
-		{"integer", []interface{}{1}, emptyEnv, 1},
-		{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
-		{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, DefaultEnv(), 3},
-		{"more addition", Parse("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
-		{"empty addition", Parse("(+)"), DefaultEnv(), 0},
-		{"nested addition", Parse("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},
-		{"multiple expressions", Parse("1 2 3"), DefaultEnv(), 3},
-	}
+	t.Run("types", func(t *testing.T) {
+		cases := []evalCase{
+			{"integer", []interface{}{1}, emptyEnv, 1},
+			{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
+			{"multiple expressions", Parse("1 2 3"), DefaultEnv(), 3},
+		}
 
-	testEvalCases(cases, t)
+		testEvalCases(cases, t)
+	})
+
+	t.Run("addition", func(t *testing.T) {
+		cases := []evalCase{
+			{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, DefaultEnv(), 3},
+			{"more addition", Parse("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
+			{"empty addition", Parse("(+)"), DefaultEnv(), 0},
+			{"nested addition", Parse("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},
+		}
+
+		testEvalCases(cases, t)
+	})
 
 	t.Run("subtraction", func(t *testing.T) {
+		t.Parallel()
 		cases := []evalCase{
 			{"subtract", Parse("(-)"), DefaultEnv(), 0},
 			{"subtract", Parse("(- 1)"), DefaultEnv(), -1},
@@ -107,6 +117,7 @@ func testEvalCases(cases []evalCase, t *testing.T) {
 	t.Helper()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
 			got := Eval(c.expression, c.env)
 			if !reflect.DeepEqual(got, c.want) {
 				t.Fatalf("Expected %#v to evaluate to %#v but got %#v", c.expression, c.want, got)
