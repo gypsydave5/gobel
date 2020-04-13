@@ -12,7 +12,7 @@ import (
 func main() {
 	if isPipe(os.Stdin) {
 		c, _ := ioutil.ReadAll(os.Stdin)
-		result := gobel.Eval(gobel.Parse(string(c)), gobel.DefaultEnv())
+		result := gobel.Eval(gobel.Read(string(c)), gobel.DefaultEnv())
 		fmt.Println(result)
 	} else {
 		repl()
@@ -28,7 +28,7 @@ func repl() {
 		if err == io.EOF {
 			break
 		}
-		ts := gobel.Parse(expression)
+		ts := gobel.Read(expression)
 		result := gobel.Eval(ts, gobel.DefaultEnv())
 		fmt.Println(result)
 	}

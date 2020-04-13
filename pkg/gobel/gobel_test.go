@@ -45,14 +45,14 @@ func TestParse(t *testing.T) {
 		{"list in second place", "( 1 () )", &Pair{1, &Pair{Nil, Nil}}},
 		{"simple two lists", "( (1) (1) )", &Pair{&Pair{1, Nil}, &Pair{&Pair{1, Nil}, Nil}}},
 		{"two lists", "(+ (+ 1 2) (+ 3 4))",
-			&Pair{&Symbol{"+"}, &Pair{Parse("(+ 1 2)")[0], &Pair{Parse("(+ 3 4)")[0], Nil}}}},
+			&Pair{&Symbol{"+"}, &Pair{Read("(+ 1 2)")[0], &Pair{Read("(+ 3 4)")[0], Nil}}}},
 		{"funky expression", "(if nil 1 2)", &Pair{&Symbol{"if"}, &Pair{Nil, &Pair{1, &Pair{2, Nil}}}}},
 	}
 
 	for i := range cases {
 		c := cases[i]
 		t.Run(c.name, func(t *testing.T) {
-			got := Parse(c.program)[0]
+			got := Read(c.program)[0]
 			if !reflect.DeepEqual(c.want, got) {
 				t.Errorf("Expected %#v but got %#v", c.want, got)
 			}
@@ -76,7 +76,7 @@ func TestEval(t *testing.T) {
 		cases := []evalCase{
 			{"integer", []interface{}{1}, emptyEnv, 1},
 			{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
-			{"multiple expressions", Parse("1 2 3"), DefaultEnv(), 3},
+			{"multiple expressions", Read("1 2 3"), DefaultEnv(), 3},
 		}
 
 		testEvalCases(cases, t)
@@ -85,9 +85,9 @@ func TestEval(t *testing.T) {
 	t.Run("addition", func(t *testing.T) {
 		cases := []evalCase{
 			{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, DefaultEnv(), 3},
-			{"more addition", Parse("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
-			{"empty addition", Parse("(+)"), DefaultEnv(), 0},
-			{"nested addition", Parse("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},
+			{"more addition", Read("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
+			{"empty addition", Read("(+)"), DefaultEnv(), 0},
+			{"nested addition", Read("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},
 		}
 
 		testEvalCases(cases, t)
@@ -96,11 +96,11 @@ func TestEval(t *testing.T) {
 	t.Run("subtraction", func(t *testing.T) {
 		t.Parallel()
 		cases := []evalCase{
-			{"subtract", Parse("(-)"), DefaultEnv(), 0},
-			{"subtract", Parse("(- 1)"), DefaultEnv(), -1},
-			{"subtract", Parse("(- 6 4)"), DefaultEnv(), 2},
-			{"subtract", Parse("(- 20 2 2 2)"), DefaultEnv(), 14},
-			{"subtract", Parse("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
+			{"subtract", Read("(-)"), DefaultEnv(), 0},
+			{"subtract", Read("(- 1)"), DefaultEnv(), -1},
+			{"subtract", Read("(- 6 4)"), DefaultEnv(), 2},
+			{"subtract", Read("(- 20 2 2 2)"), DefaultEnv(), 14},
+			{"subtract", Read("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
 		}
 
 		testEvalCases(cases, t)
@@ -108,8 +108,8 @@ func TestEval(t *testing.T) {
 
 	t.Run("if", func(t *testing.T) {
 		cases := []evalCase{
-			{"if true", Parse("(if 1 6 7)"), DefaultEnv(), 6},
-			{"if nil", Parse("(if nil 6 7)"), DefaultEnv(), 7},
+			{"if true", Read("(if 1 6 7)"), DefaultEnv(), 6},
+			{"if nil", Read("(if nil 6 7)"), DefaultEnv(), 7},
 		}
 		testEvalCases(cases, t)
 	})

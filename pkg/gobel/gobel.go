@@ -50,7 +50,7 @@ func (t *Tokenizer) End() bool {
 	return t.current == len(t.tokens)
 }
 
-func Parse(program string) []interface{} {
+func Read(program string) []interface{} {
 	var expressions []interface{}
 	toks := NewTokenizer(program)
 	for !toks.End() {
