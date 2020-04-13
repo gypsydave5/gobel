@@ -39,6 +39,13 @@ func TestRead(t *testing.T) {
 		testReadCases(cases, t)
 	})
 
+	t.Run("symbols", func(t *testing.T) {
+		cases := []readCase{
+			{"symbol", "symbol", &Symbol{"symbol"}},
+		}
+		testReadCases(cases, t)
+	})
+
 	t.Run("characters", func(t *testing.T) {
 		cases := []readCase{
 			{"a", `\a`, 'a'},
@@ -65,13 +72,6 @@ func TestRead(t *testing.T) {
 		testReadCases(cases, t)
 	})
 
-	t.Run("symbols", func(t *testing.T) {
-		cases := []readCase{
-			{"symbol", "symbol", &Symbol{"symbol"}},
-		}
-		testReadCases(cases, t)
-	})
-
 	t.Run("lists", func(t *testing.T) {
 		cases := []readCase{
 			{"empty list", "()", Nil},
@@ -90,6 +90,13 @@ func TestRead(t *testing.T) {
 				&Pair{&Symbol{"+"}, &Pair{Read("(+ 1 2)")[0], &Pair{Read("(+ 3 4)")[0], Nil}}}},
 		}
 
+		testReadCases(cases, t)
+	})
+
+	t.Run("strings", func(t *testing.T) {
+		cases := []readCase{
+			{"simple string", `"hello"`, &Pair{'h', &Pair{'e', &Pair{'l', &Pair{'l', &Pair{'o', Nil}}}}}},
+		}
 		testReadCases(cases, t)
 	})
 

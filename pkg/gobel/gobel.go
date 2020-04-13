@@ -69,9 +69,28 @@ func readTokens(toks *Tokenizer) interface{} {
 		toks.Next()
 		return readList(toks)
 	}
+	if strings.HasPrefix(toks.Current(), `"`) {
+		s := aString(toks.Current())
+		toks.Next()
+		return s
+	}
 	a := atom(toks.Current())
 	toks.Next()
 	return a
+}
+
+func aString(str string) *Pair {
+	str = strings.Trim(str, `"`)
+	rs := []rune(str)
+	p := Nil
+	for i := len(str) - 1; i > -1; i-- {
+		p = cons(rs[i], p)
+	}
+	return p
+}
+
+func cons(i interface{}, p *Pair) *Pair {
+	return &Pair{i, p}
 }
 
 func readList(toks *Tokenizer) *Pair {
