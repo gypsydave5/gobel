@@ -43,5 +43,10 @@ func toString(i interface{}) string {
 	if v, ok := i.(int); ok {
 		return strconv.Itoa(v)
 	}
+
+	if v, ok := i.(rune); ok {
+		return fmt.Sprintf("\\%s", string(v))
+	}
+
 	return i.(fmt.Stringer).String()
 }

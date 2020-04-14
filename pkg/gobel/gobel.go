@@ -2,6 +2,7 @@ package gobel
 
 import (
 	"container/list"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -31,32 +32,20 @@ type Symbol struct {
 	Str string
 }
 
+// Nil is a more Lispy nil than `nil` - it's a nil *Pair.
 var Nil *Pair = nil
 
-type Tokenizer struct {
-	tokens  []string
-	current int
-}
-
-func NewTokenizer(program string) *Tokenizer {
-	return &Tokenizer{tokenize(program), 0}
-}
-
-func (t *Tokenizer) Current() string {
-	return t.tokens[t.current]
-}
-
-func (t *Tokenizer) Next() {
-	t.current += 1
-}
-
-func (t *Tokenizer) End() bool {
-	return t.current == len(t.tokens)
+// Lexer describes a simple lexer for the Bel language. It can return the current token
+// as a string, move to the next token, and flag when the input is at an end.
+type Lexer interface {
+	Current() string
+	Next()
+	End() bool
 }
 
 func Read(program string) []interface{} {
 	var expressions []interface{}
-	toks := NewTokenizer(program)
+	toks := NewScanLexer(strings.NewReader(program))
 	for !toks.End() {
 		e := readTokens(toks)
 		expressions = append(expressions, e)
@@ -64,7 +53,7 @@ func Read(program string) []interface{} {
 	return expressions
 }
 
-func readTokens(toks *Tokenizer) interface{} {
+func readTokens(toks Lexer) interface{} {
 	if toks.Current() == "(" {
 		toks.Next()
 		return readList(toks)
@@ -80,11 +69,15 @@ func readTokens(toks *Tokenizer) interface{} {
 }
 
 func aString(str string) *Pair {
-	str = strings.Trim(str, `"`)
+	str = strings.TrimPrefix(str, `"`)
+	str = strings.TrimSuffix(str, `"`)
 	rs := []rune(str)
 	p := Nil
 	for i := len(str) - 1; i > -1; i-- {
 		p = cons(rs[i], p)
+		if rs[i] == '"' || rs[i] == '\\' { // jump past the escape character when reading in
+			i--
+		}
 	}
 	return p
 }
@@ -93,7 +86,7 @@ func cons(i interface{}, p *Pair) *Pair {
 	return &Pair{i, p}
 }
 
-func readList(toks *Tokenizer) *Pair {
+func readList(toks Lexer) *Pair {
 	if toks.Current() == ")" {
 		toks.Next()
 		return Nil
@@ -114,6 +107,7 @@ func readList(toks *Tokenizer) *Pair {
 }
 
 func atom(a string) interface{} {
+	fmt.Println(a)
 	if a == "nil" {
 		return Nil
 	}

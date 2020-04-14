@@ -6,31 +6,6 @@ import (
 	"testing"
 )
 
-func TestTokenize(t *testing.T) {
-	cases := []struct {
-		program string
-		want    []string
-	}{
-		{"(+ 1 1)", []string{"(", "+", "1", "1", ")"}},
-		{"(() ())", []string{"(", "(", ")", "(", ")", ")"}},
-		{"((1) (1))", []string{"(", "(", "1", ")", "(", "1", ")", ")"}},
-	}
-
-	for _, c := range cases {
-		got := tokenize(c.program)
-
-		if !reflect.DeepEqual(c.want, got) {
-			t.Errorf("Expected %#v but got %#v", c.want, got)
-		}
-	}
-}
-
-type readCase struct {
-	name    string
-	program string
-	want    interface{}
-}
-
 func TestRead(t *testing.T) {
 	t.Run("numbers", func(t *testing.T) {
 		cases := []readCase{
@@ -64,7 +39,7 @@ func TestRead(t *testing.T) {
 					s.WriteRune(r)
 					got := Read(s.String())[0]
 					if !reflect.DeepEqual(r, got) {
-						t.Errorf("Expected %#v when reading %q but got %#v", r, s.String(), got)
+						t.Errorf("Expected %#v when reading '%s' but got %#v", r, s.String(), got)
 					}
 				})
 			}
@@ -96,8 +71,8 @@ func TestRead(t *testing.T) {
 	t.Run("strings", func(t *testing.T) {
 		cases := []readCase{
 			{"simple string", `"hello"`, &Pair{'h', &Pair{'e', &Pair{'l', &Pair{'l', &Pair{'o', Nil}}}}}},
-			// {"string with space", `"l o"`, &Pair{'h', &Pair{' ', &Pair{'o', Nil}}}}, TODO: will require a much better lexer
-			// {"string with quote", `"\""`, &Pair{'h', &Pair{' ', &Pair{'o', Nil}}}}, TODO: will require a much better lexer
+			{"string with space", `"h o"`, &Pair{'h', &Pair{' ', &Pair{'o', Nil}}}},
+			{"string with quote", `"\""`, &Pair{'"', Nil}},
 		}
 		testReadCases(cases, t)
 	})
@@ -118,17 +93,10 @@ func testReadCases(cases []readCase, t *testing.T) {
 
 			got := Read(c.program)[0]
 			if !reflect.DeepEqual(c.want, got) {
-				t.Errorf("Expected %#v but got %#v", c.want, got)
+				t.Errorf("Expected %v but got %v", c.want, got)
 			}
 		})
 	}
-}
-
-type evalCase struct {
-	name       string
-	expression []interface{}
-	env        Env
-	want       interface{}
 }
 
 func TestEval(t *testing.T) {
@@ -190,4 +158,17 @@ func testEvalCases(cases []evalCase, t *testing.T) {
 			}
 		})
 	}
+}
+
+type readCase struct {
+	name    string
+	program string
+	want    interface{}
+}
+
+type evalCase struct {
+	name       string
+	expression []interface{}
+	env        Env
+	want       interface{}
 }

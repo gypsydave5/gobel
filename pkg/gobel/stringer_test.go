@@ -13,6 +13,16 @@ func TestStringer(t *testing.T) {
 			t.Errorf("Expected %q but got %q", s.String(), s.Str)
 		}
 	})
+
+	t.Run("characters", func(t *testing.T) {
+		t.Parallel()
+		s := &g.Pair{'a', 'b'}
+		want := `(\a . \b)`
+		if s.String() != want {
+			t.Errorf("Expected %q but got %q", s.String(), want)
+		}
+	})
+
 	t.Run("pairs", func(t *testing.T) {
 		cases := []struct {
 			name     string
