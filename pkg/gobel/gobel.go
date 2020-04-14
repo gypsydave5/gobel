@@ -214,13 +214,32 @@ func DefaultEnv() Env {
 		return result
 	}
 
-	m["if"] = func(l *Pair, env Env) interface{} {
-		condition := eval(l.First, env)
-		if condition != Nil {
-			return eval(l.Rest.(*Pair).First, env)
-		}
+	m["if"] = belIf
+
+	return m
+}
+
+func belIf(l *Pair, env Env) interface{} {
+	condition := eval(l.First, env)
+	if condition != Nil {
+		return eval(car(cdr(l).(*Pair)), env)
+	}
+
+	if v, ok := l.Rest.(*Pair).Rest.(*Pair); ok && v == Nil {
+		return Nil
+	}
+
+	if _, ok := l.Rest.(*Pair).Rest.(*Pair).Rest.(*Pair); !ok {
 		return eval(l.Rest.(*Pair).Rest.(*Pair).First, env)
 	}
 
-	return m
+	return belIf(l.Rest.(*Pair).Rest.(*Pair).Rest.(*Pair), env)
+}
+
+func car(p *Pair) interface{} {
+	return p.First
+}
+
+func cdr(p *Pair) interface{} {
+	return p.Rest
 }

@@ -142,6 +142,11 @@ func TestEval(t *testing.T) {
 		cases := []evalCase{
 			{"if true", Read("(if 1 6 7)"), DefaultEnv(), 6},
 			{"if nil", Read("(if nil 6 7)"), DefaultEnv(), 7},
+			{"do not eval third if true", Read("(if 1 6 garbage)"), DefaultEnv(), 6},
+			{"do not eval second if false", Read("(if nil rubbish 7)"), DefaultEnv(), 7},
+			{"bel if", Read("(if nil rubbish nil more-rubbish 7 )"), DefaultEnv(), 7},
+			{"bel if shortened", Read("(if nil rubbish)"), DefaultEnv(), Nil},
+			{"bel if bit longer", Read("(if nil rubbish nil balls nil crap)"), DefaultEnv(), Nil},
 		}
 		testEvalCases(cases, t)
 	})
@@ -154,7 +159,7 @@ func testEvalCases(cases []evalCase, t *testing.T) {
 			t.Parallel()
 			got := Eval(c.expression, c.env)
 			if !reflect.DeepEqual(got, c.want) {
-				t.Fatalf("Expected %#v to evaluate to %#v but got %#v", c.expression, c.want, got)
+				t.Fatalf("Expected %v to evaluate to %v but got %v", c.expression[0], c.want, got)
 			}
 		})
 	}
