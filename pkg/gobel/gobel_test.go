@@ -96,6 +96,8 @@ func TestRead(t *testing.T) {
 	t.Run("strings", func(t *testing.T) {
 		cases := []readCase{
 			{"simple string", `"hello"`, &Pair{'h', &Pair{'e', &Pair{'l', &Pair{'l', &Pair{'o', Nil}}}}}},
+			// {"string with space", `"l o"`, &Pair{'h', &Pair{' ', &Pair{'o', Nil}}}}, TODO: will require a much better lexer
+			// {"string with quote", `"\""`, &Pair{'h', &Pair{' ', &Pair{'o', Nil}}}}, TODO: will require a much better lexer
 		}
 		testReadCases(cases, t)
 	})
