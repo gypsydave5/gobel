@@ -18,6 +18,8 @@ func TestScanLexer(t *testing.T) {
 		{"string with embedded quote", `"\""`, []string{`"\""`}},
 		{"pair of nils", "(() ())", []string{"(", "(", ")", "(", ")", ")"}},
 		{"pair of ones", "((1) (1))", []string{"(", "(", "1", ")", "(", "1", ")", ")"}},
+		{"snake_case", "snake_case", []string{"snake_case"}},
+		{"kebab-case-OK", "kebab-case", []string{"kebab-case"}},
 	}
 
 	for _, c := range cases {
