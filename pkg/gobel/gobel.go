@@ -2,7 +2,6 @@ package gobel
 
 import (
 	"container/list"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -107,7 +106,6 @@ func readList(toks Lexer) *Pair {
 }
 
 func atom(a string) interface{} {
-	fmt.Println(a)
 	if a == "nil" {
 		return Nil
 	}
