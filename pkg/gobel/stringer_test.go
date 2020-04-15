@@ -41,10 +41,27 @@ func TestStringer(t *testing.T) {
 
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
-				t.Parallel()
-
 				if c.list.String() != c.stringed {
 					t.Errorf("Expected %q but got %q", c.stringed, c.list.String())
+				}
+			})
+		}
+	})
+
+	t.Run("strings", func(t *testing.T) {
+		cases := []struct {
+			want string
+			str  *g.Pair
+		}{
+			{`"abc"`, &g.Pair{'a', &g.Pair{'b', &g.Pair{'c', g.Nil}}}},
+			{`"\"a\""`, &g.Pair{'"', &g.Pair{'a', &g.Pair{'"', g.Nil}}}},
+		}
+
+		for _, c := range cases {
+			t.Run(c.want, func(t *testing.T) {
+				got := c.str.String()
+				if got != c.want {
+					t.Errorf("Expected '%s' but got '%s'", c.want, got)
 				}
 			})
 		}

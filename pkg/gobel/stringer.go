@@ -12,12 +12,30 @@ func (p *Pair) String() string {
 	}
 
 	var s strings.Builder
+	var actualString strings.Builder
+	isActualString := true
 
 	s.WriteString("(")
+	actualString.WriteRune('"')
 
 	for {
 		s.WriteString(toString(p.First))
+		if isActualString {
+			if r, ok := p.First.(rune); ok {
+				if r == '"' {
+					actualString.WriteRune('\\')
+				}
+				actualString.WriteRune(r)
+			} else {
+				isActualString = false
+			}
+		}
+
 		if p.Rest == Nil || p.Rest == nil {
+			if isActualString {
+				actualString.WriteRune('"')
+				return actualString.String()
+			}
 			s.WriteString(")")
 			return s.String()
 		}
@@ -26,12 +44,17 @@ func (p *Pair) String() string {
 			p = next
 			continue
 		}
+
 		s.WriteString(" . ")
 		s.WriteString(toString(p.Rest))
 		s.WriteString(")")
 		break
 	}
 
+	if isActualString {
+		actualString.WriteRune('"')
+		return actualString.String()
+	}
 	return s.String()
 }
 

@@ -126,7 +126,6 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("subtraction", func(t *testing.T) {
-		t.Parallel()
 		cases := []evalCase{
 			{"subtract", Read("(-)"), DefaultEnv(), 0},
 			{"subtract", Read("(- 1)"), DefaultEnv(), -1},
@@ -135,10 +134,6 @@ func TestEval(t *testing.T) {
 			{"subtract", Read("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
 		}
 		testEvalCases(cases, t)
-	})
-
-	t.Run("set", func(t *testing.T) {
-
 	})
 
 	t.Run("if", func(t *testing.T) {
@@ -157,7 +152,8 @@ func TestEval(t *testing.T) {
 
 func testEvalCases(cases []evalCase, t *testing.T) {
 	t.Helper()
-	for _, c := range cases {
+	for i := range cases {
+		c := cases[i]
 		t.Run(c.name, func(t *testing.T) {
 			got := Eval(c.expression, c.env)
 			if !reflect.DeepEqual(got, c.want) {
