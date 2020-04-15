@@ -134,8 +134,11 @@ func TestEval(t *testing.T) {
 			{"subtract", Read("(- 20 2 2 2)"), DefaultEnv(), 14},
 			{"subtract", Read("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
 		}
-
 		testEvalCases(cases, t)
+	})
+
+	t.Run("set", func(t *testing.T) {
+
 	})
 
 	t.Run("if", func(t *testing.T) {
@@ -156,7 +159,6 @@ func testEvalCases(cases []evalCase, t *testing.T) {
 	t.Helper()
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			t.Parallel()
 			got := Eval(c.expression, c.env)
 			if !reflect.DeepEqual(got, c.want) {
 				t.Fatalf("Expected %v to evaluate to %v but got %v", c.expression[0], c.want, got)

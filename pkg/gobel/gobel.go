@@ -153,11 +153,7 @@ func Eval(expressions []interface{}, env Env) interface{} {
 }
 
 func eval(expression interface{}, env Env) interface{} {
-	if expression == Nil {
-		return Nil
-	}
-
-	if expression == nil {
+	if isNil(expression) {
 		return Nil
 	}
 
@@ -221,19 +217,33 @@ func DefaultEnv() Env {
 
 func belIf(l *Pair, env Env) interface{} {
 	condition := eval(l.First, env)
-	if condition != Nil {
+	if !isNil(condition) {
 		return eval(car(cdr(l).(*Pair)), env)
 	}
 
-	if v, ok := l.Rest.(*Pair).Rest.(*Pair); ok && v == Nil {
+	if v, ok := l.Rest.(*Pair).Rest.(*Pair); ok && isNil(v) {
 		return Nil
 	}
 
-	if _, ok := l.Rest.(*Pair).Rest.(*Pair).Rest.(*Pair); !ok {
-		return eval(l.Rest.(*Pair).Rest.(*Pair).First, env)
+	if v, ok := l.Rest.(*Pair).Rest.(*Pair).Rest.(*Pair); ok && isNil(v) {
+		return l.Rest.(*Pair).Rest.(*Pair).First
 	}
 
-	return belIf(l.Rest.(*Pair).Rest.(*Pair).Rest.(*Pair), env)
+	return belIf(l.Rest.(*Pair).Rest.(*Pair), env)
+}
+
+func id(a, b interface{}) bool {
+	if ap, aok := a.(*Pair); aok {
+		if bp, bok := b.(*Pair); bok {
+			return bp == ap
+		}
+	}
+
+	return false
+}
+
+func isNil(i interface{}) bool {
+	return id(i, Nil)
 }
 
 func car(p *Pair) interface{} {

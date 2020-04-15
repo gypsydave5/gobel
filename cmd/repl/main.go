@@ -5,19 +5,17 @@ import (
 	"fmt"
 	"github.com/gypsydave5/gobel/pkg/gobel"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
 func main() {
-	if isPipe(os.Stdin) {
-		c, _ := ioutil.ReadAll(os.Stdin)
-		result := gobel.Eval(gobel.Read(string(c)), gobel.DefaultEnv())
-		fmt.Println(result)
-	} else {
-		repl()
-	}
-
+	// if isPipe(os.Stdin) {
+	// 	c, _ := ioutil.ReadAll(os.Stdin)
+	// 	result := gobel.Eval(gobel.Read(string(c)), gobel.DefaultEnv())
+	// 	fmt.Println(result)
+	// } else {
+	repl()
+	// }
 }
 
 func repl() {
