@@ -11,7 +11,7 @@ import (
 func main() {
 	// if isPipe(os.Stdin) {
 	// 	c, _ := ioutil.ReadAll(os.Stdin)
-	// 	result := gobel.Eval(gobel.Read(string(c)), gobel.DefaultEnv())
+	// 	result := gobel.Eval(gobel.Read(string(c)), gobel.GlobalEnv())
 	// 	fmt.Println(result)
 	// } else {
 	repl()
@@ -27,7 +27,7 @@ func repl() {
 			break
 		}
 		ts := gobel.Read(expression)
-		result := gobel.Eval(ts, gobel.DefaultEnv())
+		result := gobel.Eval(ts, gobel.GlobalEnv())
 		fmt.Println(result)
 	}
 

@@ -7,6 +7,16 @@ import (
 )
 
 func TestRead(t *testing.T) {
+	t.Run("reader macros", func(t *testing.T) {
+		t.Run("quote", func(t *testing.T) {
+			cases := []readCase{
+				{"quote symbol", "'a", &Pair{&Symbol{"quote"}, &Pair{&Symbol{"a"}, Nil}}},
+				{"quote list", "'(1)", &Pair{&Symbol{"quote"}, &Pair{&Pair{1, Nil}, Nil}}},
+			}
+			testReadCases(cases, t)
+		})
+	})
+
 	t.Run("numbers", func(t *testing.T) {
 		cases := []readCase{
 			{"integer", "1", 1},
@@ -100,15 +110,15 @@ func testReadCases(cases []readCase, t *testing.T) {
 }
 
 func TestEval(t *testing.T) {
-	emptyEnv := make(Env)
-	oneEnv := make(Env)
-	oneEnv["one"] = 1
+	emptyEnv := NewEnv(nil)
+	oneEnv := NewEnv(nil)
+	oneEnv.set("one", 1)
 
 	t.Run("types", func(t *testing.T) {
 		cases := []evalCase{
 			{"integer", []interface{}{1}, emptyEnv, 1},
 			{"symbol", []interface{}{&Symbol{"one"}}, oneEnv, 1},
-			{"multiple expressions", Read("1 2 3"), DefaultEnv(), 3},
+			{"multiple expressions", Read("1 2 3"), GlobalEnv(), 3},
 		}
 
 		testEvalCases(cases, t)
@@ -116,10 +126,10 @@ func TestEval(t *testing.T) {
 
 	t.Run("addition", func(t *testing.T) {
 		cases := []evalCase{
-			{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, DefaultEnv(), 3},
-			{"more addition", Read("(+ 1 2 3 4 5)"), DefaultEnv(), 15},
-			{"empty addition", Read("(+)"), DefaultEnv(), 0},
-			{"nested addition", Read("(+ (+ 2 2) (+ 3 3))"), DefaultEnv(), 10},
+			{"addition", []interface{}{&Pair{&Symbol{"+"}, &Pair{1, &Pair{2, Nil}}}}, GlobalEnv(), 3},
+			{"more addition", Read("(+ 1 2 3 4 5)"), GlobalEnv(), 15},
+			{"empty addition", Read("(+)"), GlobalEnv(), 0},
+			{"nested addition", Read("(+ (+ 2 2) (+ 3 3))"), GlobalEnv(), 10},
 		}
 
 		testEvalCases(cases, t)
@@ -127,24 +137,39 @@ func TestEval(t *testing.T) {
 
 	t.Run("subtraction", func(t *testing.T) {
 		cases := []evalCase{
-			{"subtract", Read("(-)"), DefaultEnv(), 0},
-			{"subtract", Read("(- 1)"), DefaultEnv(), -1},
-			{"subtract", Read("(- 6 4)"), DefaultEnv(), 2},
-			{"subtract", Read("(- 20 2 2 2)"), DefaultEnv(), 14},
-			{"subtract", Read("(- 20 (+ 2 2 2) (- 10))"), DefaultEnv(), 24},
+			{"subtract", Read("(-)"), GlobalEnv(), 0},
+			{"subtract", Read("(- 1)"), GlobalEnv(), -1},
+			{"subtract", Read("(- 6 4)"), GlobalEnv(), 2},
+			{"subtract", Read("(- 20 2 2 2)"), GlobalEnv(), 14},
+			{"subtract", Read("(- 20 (+ 2 2 2) (- 10))"), GlobalEnv(), 24},
 		}
 		testEvalCases(cases, t)
 	})
 
 	t.Run("if", func(t *testing.T) {
 		cases := []evalCase{
-			{"if true", Read("(if 1 6 7)"), DefaultEnv(), 6},
-			{"if nil", Read("(if nil 6 7)"), DefaultEnv(), 7},
-			{"do not eval third if true", Read("(if 1 6 garbage)"), DefaultEnv(), 6},
-			{"do not eval second if false", Read("(if nil rubbish 7)"), DefaultEnv(), 7},
-			{"bel if", Read("(if nil rubbish nil more-rubbish 7 )"), DefaultEnv(), 7},
-			{"bel if shortened", Read("(if nil rubbish)"), DefaultEnv(), Nil},
-			{"bel if bit longer", Read("(if nil rubbish nil balls nil crap)"), DefaultEnv(), Nil},
+			{"if true", Read("(if 1 6 7)"), GlobalEnv(), 6},
+			{"if nil", Read("(if nil 6 7)"), GlobalEnv(), 7},
+			{"do not eval third if true", Read("(if 1 6 garbage)"), GlobalEnv(), 6},
+			{"do not eval second if false", Read("(if nil rubbish 7)"), GlobalEnv(), 7},
+			{"bel if", Read("(if nil rubbish nil more-rubbish 7 )"), GlobalEnv(), 7},
+			{"bel if shortened", Read("(if nil rubbish)"), GlobalEnv(), Nil},
+			{"bel if bit longer", Read("(if nil rubbish nil balls nil crap)"), GlobalEnv(), Nil},
+		}
+		testEvalCases(cases, t)
+	})
+
+	t.Run("quote", func(t *testing.T) {
+		cases := []evalCase{
+			{"quote", Read("(quote a)"), GlobalEnv(), &Symbol{"a"}},
+		}
+		testEvalCases(cases, t)
+	})
+
+	t.Run("set", func(t *testing.T) {
+		cases := []evalCase{
+			{"simple set", Read("(set (quote x) 1) x"), GlobalEnv(), 1},
+			{"fancy quote set", Read("(set 'x 55) x"), GlobalEnv(), 55},
 		}
 		testEvalCases(cases, t)
 	})
@@ -172,6 +197,6 @@ type readCase struct {
 type evalCase struct {
 	name       string
 	expression []interface{}
-	env        Env
+	env        *Env
 	want       interface{}
 }

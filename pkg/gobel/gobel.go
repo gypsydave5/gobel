@@ -2,6 +2,8 @@ package gobel
 
 import (
 	"container/list"
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -53,6 +55,10 @@ func Read(program string) []interface{} {
 }
 
 func readTokens(toks Lexer) interface{} {
+	if toks.Current() == "'" {
+		toks.Next()
+		return &Pair{&Symbol{"quote"}, &Pair{readTokens(toks), Nil}}
+	}
 	if toks.Current() == "(" {
 		toks.Next()
 		return readList(toks)
@@ -144,7 +150,7 @@ func charCodeLookup(s string) rune {
 	return '\000'
 }
 
-func Eval(expressions []interface{}, env Env) interface{} {
+func Eval(expressions []interface{}, env *Env) interface{} {
 	var r interface{}
 	for i := range expressions {
 		r = eval(expressions[i], env)
@@ -152,7 +158,7 @@ func Eval(expressions []interface{}, env Env) interface{} {
 	return r
 }
 
-func eval(expression interface{}, env Env) interface{} {
+func eval(expression interface{}, env *Env) interface{} {
 	if isNil(expression) {
 		return Nil
 	}
@@ -164,25 +170,52 @@ func eval(expression interface{}, env Env) interface{} {
 
 	s, ok := expression.(*Symbol)
 	if ok {
-		return env[s.Str]
+		return env.get(s.Str)
 	}
 
 	p, ok := expression.(*Pair)
 	if ok {
 		f := eval(p.First, env)
-		ff := f.(func(l *Pair, env Env) interface{})
+		ff := f.(func(l *Pair, env *Env) interface{})
 		return ff(p.Rest.(*Pair), env)
 	}
 
 	return "WTF???"
 }
 
-type Env = map[string]interface{}
+type Env struct {
+	outer    *Env
+	bindings map[string]interface{}
+}
 
-func DefaultEnv() Env {
-	m := make(Env)
+func NewEnv(outer *Env) *Env {
+	return &Env{
+		outer:    outer,
+		bindings: make(map[string]interface{}),
+	}
+}
 
-	m["+"] = func(l *Pair, env Env) interface{} {
+func (env *Env) get(name string) interface{} {
+	v, present := env.bindings[name]
+	if present {
+		return v
+	}
+	if env.outer != nil {
+		return env.outer.get(name)
+	}
+
+	return errors.New(fmt.Sprintf("No binding for %s in scope", name))
+}
+
+func (env *Env) set(name string, value interface{}) interface{} {
+	env.bindings[name] = value
+	return value
+}
+
+func GlobalEnv() *Env {
+	m := NewEnv(nil)
+
+	m.set("+", func(l *Pair, env *Env) interface{} {
 		result := 0
 		next := l
 		for next != nil {
@@ -190,9 +223,9 @@ func DefaultEnv() Env {
 			next = next.Rest.(*Pair)
 		}
 		return result
-	}
+	})
 
-	m["-"] = func(l *Pair, env Env) interface{} {
+	m.set("-", func(l *Pair, env *Env) interface{} {
 		result := 0
 		next := l
 		if next == Nil {
@@ -208,14 +241,32 @@ func DefaultEnv() Env {
 			next = next.Rest.(*Pair)
 		}
 		return result
-	}
+	})
 
-	m["if"] = belIf
+	m.set("set", set)
+
+	m.set("if", belIf)
+
+	m.set("quote", quote)
 
 	return m
 }
 
-func belIf(l *Pair, env Env) interface{} {
+func set(l *Pair, env *Env) interface{} {
+	name, ok := eval(l.First, env).(*Symbol)
+	if !ok {
+		return errors.New("cannot assign to something that's not a symbol")
+	}
+	value := eval(l.Rest.(*Pair).First, env)
+	env.set(name.Str, value)
+	return value
+}
+
+func quote(l *Pair, _ *Env) interface{} {
+	return l.First
+}
+
+func belIf(l *Pair, env *Env) interface{} {
 	condition := eval(l.First, env)
 	if !isNil(condition) {
 		return eval(car(cdr(l).(*Pair)), env)

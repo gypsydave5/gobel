@@ -17,6 +17,7 @@ type ScanLexer struct {
 func NewScanLexer(r io.Reader) *ScanLexer {
 	var s scanner.Scanner
 	s.Init(r)
+	s.Mode = scanner.ScanIdents | scanner.ScanStrings | scanner.ScanInts
 	s.IsIdentRune = func(ch rune, i int) bool {
 		return ch == '_' ||
 			ch == '-' ||
