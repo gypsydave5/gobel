@@ -14,31 +14,26 @@ func Eval(expressions []interface{}, env *Env) interface{} {
 }
 
 func eval(expression interface{}, env *Env) interface{} {
-	if isNil(expression) {
+	switch v := expression.(type) {
+	case nil:
 		return Nil
-	}
-
-	i, ok := expression.(int)
-	if ok {
-		return i
-	}
-
-	s, ok := expression.(*Symbol)
-	if ok {
-		return env.get(s.Str)
-	}
-
-	p, ok := expression.(*Pair)
-	if ok {
-		first := eval(p.First, env)
+	case int:
+		return v
+	case *Symbol:
+		return env.get(v.Str)
+	case *Pair:
+		if v == Nil {
+			return Nil
+		}
+		first := eval(v.First, env)
 		switch t := first.(type) {
 		case *SpecialForm:
-			return t.form(p.Rest.(*Pair), env)
+			return t.form(v.Rest.(*Pair), env)
 		}
-		return apply(first, listOfValues(p.Rest.(*Pair), env))
+		return apply(first, listOfValues(v.Rest.(*Pair), env))
+	default:
+		return fmt.Errorf("eh??? %v", v)
 	}
-
-	return fmt.Errorf("eh??? %v", p)
 }
 
 type Procedure struct {

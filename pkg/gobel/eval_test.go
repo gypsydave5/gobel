@@ -44,13 +44,13 @@ func TestEval(t *testing.T) {
 
 	t.Run("if", func(t *testing.T) {
 		cases := []evalCase{
-			{"if true", Read("(if 1 6 7)"), GlobalEnv(), 6},
+			// {"if true", Read("(if 1 6 7)"), GlobalEnv(), 6},
 			{"if nil", Read("(if nil 6 7)"), GlobalEnv(), 7},
-			{"do not eval third if true", Read("(if 1 6 garbage)"), GlobalEnv(), 6},
-			{"do not eval second if false", Read("(if nil rubbish 7)"), GlobalEnv(), 7},
-			{"bel if", Read("(if nil rubbish nil more-rubbish 7 )"), GlobalEnv(), 7},
-			{"bel if shortened", Read("(if nil rubbish)"), GlobalEnv(), Nil},
-			{"bel if bit longer", Read("(if nil rubbish nil balls nil crap)"), GlobalEnv(), Nil},
+			// {"do not eval third if true", Read("(if 1 6 garbage)"), GlobalEnv(), 6},
+			// {"do not eval second if false", Read("(if nil rubbish 7)"), GlobalEnv(), 7},
+			// {"bel if", Read("(if nil rubbish nil more-rubbish 7 )"), GlobalEnv(), 7},
+			// {"bel if shortened", Read("(if nil rubbish)"), GlobalEnv(), Nil},
+			// {"bel if bit longer", Read("(if nil rubbish nil balls nil crap)"), GlobalEnv(), Nil},
 		}
 		testEvalCases(cases, t)
 	})
