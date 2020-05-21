@@ -8,7 +8,7 @@ import (
 
 func (p *Pair) String() string {
 	if p == Nil {
-		return "nil"
+		return "()"
 	}
 
 	var s strings.Builder
@@ -48,6 +48,7 @@ func (p *Pair) String() string {
 		s.WriteString(" . ")
 		s.WriteString(toString(p.Rest))
 		s.WriteString(")")
+		isActualString = false
 		break
 	}
 
