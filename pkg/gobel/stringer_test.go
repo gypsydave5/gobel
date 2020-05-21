@@ -2,6 +2,7 @@ package gobel_test
 
 import (
 	g "github.com/gypsydave5/gobel/pkg/gobel"
+	"strings"
 	"testing"
 )
 
@@ -20,6 +21,14 @@ func TestStringer(t *testing.T) {
 		want := `(\a . \b)`
 		if s.String() != want {
 			t.Errorf("Expected %q but got %q", want, s.String())
+		}
+	})
+
+	t.Run("proceedure", func(t *testing.T) {
+		t.Parallel()
+		p := g.Eval(g.Read("(lambda (x) x)"), g.GlobalEnv()).(*g.Procedure)
+		if !strings.HasPrefix(p.String(), "#[proceedure") {
+			t.Errorf("Not how I want proceedures to print - %v!", p.String())
 		}
 	})
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unsafe"
 )
 
 func (p *Pair) String() string {
@@ -61,6 +62,11 @@ func (p *Pair) String() string {
 
 func (s Symbol) String() string {
 	return s.Str
+}
+
+func (p *Procedure) String() string {
+	// todo: this is excessive
+	return fmt.Sprintf("#[proceedure %v]", unsafe.Pointer(p))
 }
 
 func toString(i interface{}) string {
