@@ -2,7 +2,9 @@
 
 A _WIP_ implementation of Paul Graham's [Bel language][bel] written in Go.
 
-Right now it's a calculator that can do conditionals.
+~Right now it's a calculator that can do conditionals.~
+
+Now featuring actual lambdas.
 
 ## The bad REPL
 
