@@ -21,6 +21,8 @@ func main() {
 
 func repl() {
 	reader := bufio.NewReader(os.Stdin)
+	env := gobel.GlobalEnv()
+
 	for {
 		fmt.Print("> ")
 		expression, err := reader.ReadString('\n')
@@ -28,7 +30,7 @@ func repl() {
 			break
 		}
 		ts := gobel.Read(expression)
-		result := gobel.Eval(ts, gobel.GlobalEnv())
+		result := gobel.Eval(ts, env)
 		fmt.Println(result)
 	}
 

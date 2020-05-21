@@ -71,15 +71,17 @@ func extendEnv(parameters interface{}, args *Pair, env *Env) (*Env, error) {
 		e.bindings[expr.String()] = args
 	case *Pair:
 		for {
-			if expr == Nil {
-				return env, fmt.Errorf("Not enough arguments")
-			}
-			if args == Nil {
-				return env, fmt.Errorf("Too few arguments")
-			}
 			if args == Nil && expr == Nil {
 				break
 			}
+			if isNil(expr) {
+				return env, fmt.Errorf("Not enough arguments")
+			}
+			if isNil(args) {
+				return env, fmt.Errorf("Too few arguments")
+			}
+
+			e.bindings[car(expr).(*Symbol).Str] = car(args)
 
 			args = cdr(args).(*Pair)
 			expr = cdr(expr).(*Pair)
@@ -179,23 +181,48 @@ func GlobalEnv() *Env {
 		return result
 	}})
 
+	m.set("test-procedure", &Procedure{
+		parameters: &Pair{
+			First: &Symbol{Str: "x"},
+			Rest:  &Pair{&Symbol{"y"}, Nil},
+		},
+		env:  m,
+		body: &Pair{Read("(+ x y)")[0].(*Pair), Nil},
+	})
+
 	m.set("set", &SpecialForm{set})
 
 	m.set("if", &SpecialForm{belIf})
 
 	m.set("quote", &SpecialForm{quote})
 
+	m.set("define", &SpecialForm{define})
+
+	m.set("lambda", &SpecialForm{newProceedure})
+
 	return m
 }
 
 func set(l *Pair, env *Env) interface{} {
-	name, ok := eval(l.First, env).(*Symbol)
+	name, ok := l.First.(*Symbol)
 	if !ok {
 		return errors.New("cannot assign to something that's not a symbol")
 	}
 	value := eval(l.Rest.(*Pair).First, env)
 	env.set(name.Str, value)
 	return value
+}
+
+func newProceedure(l *Pair, env *Env) interface{} {
+	return &Procedure{
+		env:        env,
+		parameters: car(l),
+		body:       cdr(l).(*Pair),
+	}
+}
+
+func define(l *Pair, env *Env) interface{} {
+	return set(cons(car(l), cons(cons(&Symbol{"lambda"}, cdr(l).(*Pair)), Nil)), env)
 }
 
 func quote(l *Pair, _ *Env) interface{} {
