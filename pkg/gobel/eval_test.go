@@ -92,6 +92,21 @@ func TestEval(t *testing.T) {
 		}
 		testEvalCases(cases, t)
 	})
+
+	t.Run("cons", func(t *testing.T) {
+		cases := []evalCase{
+			{"cons", Read("(cons 1 1)"), GlobalEnv(), &Pair{1, 1}},
+			{"cons", Read("(cons 1 (cons 2 nil))"), GlobalEnv(), &Pair{1, &Pair{2, Nil}}},
+		}
+		testEvalCases(cases, t)
+	})
+
+	t.Run("list", func(t *testing.T) {
+		cases := []evalCase{
+			{"list", Read("(list 1 2 3)"), GlobalEnv(), &Pair{1, &Pair{2, &Pair{3, Nil}}}},
+		}
+		testEvalCases(cases, t)
+	})
 }
 
 func testEvalCases(cases []evalCase, t *testing.T) {

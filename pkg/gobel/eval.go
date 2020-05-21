@@ -152,6 +152,11 @@ func (env *Env) set(name string, value interface{}) interface{} {
 
 func GlobalEnv() *Env {
 	m := NewEnv(nil)
+	m.set("lambda", &SpecialForm{newProceedure})
+	m.set("set", &SpecialForm{set})
+	m.set("if", &SpecialForm{belIf})
+	m.set("quote", &SpecialForm{quote})
+	m.set("define", &SpecialForm{define})
 
 	m.set("+", &NativeProcedure{func(l *Pair) interface{} {
 		result := 0
@@ -181,6 +186,12 @@ func GlobalEnv() *Env {
 		return result
 	}})
 
+	m.set("cons", &NativeProcedure{func(args *Pair) interface{} {
+		return cons(car(args), car(cdr(args).(*Pair)))
+	}})
+
+	m.set("list", eval(Read("(lambda args args)")[0], m))
+
 	m.set("test-procedure", &Procedure{
 		parameters: &Pair{
 			First: &Symbol{Str: "x"},
@@ -189,16 +200,6 @@ func GlobalEnv() *Env {
 		env:  m,
 		body: &Pair{Read("(+ x y)")[0].(*Pair), Nil},
 	})
-
-	m.set("set", &SpecialForm{set})
-
-	m.set("if", &SpecialForm{belIf})
-
-	m.set("quote", &SpecialForm{quote})
-
-	m.set("define", &SpecialForm{define})
-
-	m.set("lambda", &SpecialForm{newProceedure})
 
 	return m
 }
@@ -262,6 +263,10 @@ func id(a, b interface{}) bool {
 
 func isNil(i interface{}) bool {
 	return id(i, Nil)
+}
+
+func cons(car interface{}, cdr interface{}) *Pair {
+	return &Pair{car, cdr}
 }
 
 func car(p *Pair) interface{} {

@@ -73,10 +73,6 @@ func aString(str string) *Pair {
 	return p
 }
 
-func cons(i interface{}, p *Pair) *Pair {
-	return &Pair{i, p}
-}
-
 func readList(toks Lexer) *Pair {
 	if toks.Current() == ")" {
 		toks.Next()
