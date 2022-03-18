@@ -190,7 +190,16 @@ func GlobalEnv() *Env {
 		return cons(car(args), car(cdr(args).(*Pair)))
 	}})
 
+	m.set("car", &NativeProcedure{func(args *Pair) interface{} {
+		return car(car(args).(*Pair))
+	}})
+
+	m.set("cdr", &NativeProcedure{func(args *Pair) interface{} {
+		return cdr(car(args).(*Pair))
+	}})
+
 	m.set("list", eval(Read("(lambda args args)")[0], m))
+	m.set("map", eval(Read("(lambda (f xs) (if xs (cons (f (car xs)) (map (cdr xs) f)) nil))")[0], m))
 
 	m.set("test-procedure", &Procedure{
 		parameters: &Pair{

@@ -74,6 +74,7 @@ func aString(str string) *Pair {
 }
 
 func readList(toks Lexer) *Pair {
+	// () is an alias for Nil
 	if toks.Current() == ")" {
 		toks.Next()
 		return Nil
